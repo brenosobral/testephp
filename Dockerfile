@@ -1,4 +1,4 @@
-FROM centos:centos7
+FROM quay.io/centos/centos
 MAINTAINER Steve Pousty <thesteve0@redhat.com>
 RUN yum install -y --setopt=tsflags=nodocs httpd.x86_64 && yum clean all -y
 COPY httpd.conf /etc/httpd/conf/httpd.conf
