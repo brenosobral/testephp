@@ -1,8 +1,20 @@
-FROM quay.io/centos/centos
-MAINTAINER Steve Pousty <thesteve0@redhat.com>
-RUN yum install -y --setopt=tsflags=nodocs httpd.x86_64 && yum clean all -y
-COPY httpd.conf /etc/httpd/conf/httpd.conf
+FROM registry.access.redhat.com/ubi8/ubi
+
+MAINTAINER Breno Sobral
+
+RUN yum --disableplugin=subscription-manager -y module enable php:7.2 \
+  && yum --disableplugin=subscription-manager -y install httpd php \
+  && yum --disableplugin=subscription-manager clean all
+
+COPY *.php /var/www/html
+
+RUN sed -i 's/Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf \
+  && mkdir /run/php-fpm \
+  && chgrp -R 0 /var/log/httpd /var/run/httpd /run/php-fpm \
+  && chmod -R g=u /var/log/httpd /var/run/httpd /run/php-fpm
+  
 EXPOSE 8080
-RUN rm -rf /run/httpd && mkdir /run/httpd && chmod -R a+rwx /run/httpd
+
 USER 1001
-CMD /usr/sbin/apachectl -DFOREGROUND
+
+CMD php-fpm & httpd -D FOREGROUND
